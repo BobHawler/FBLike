@@ -2,6 +2,31 @@ from django.db import models
 from django.contrib.auth.models import User
 from .utils import get_random_code
 from django.template.defaultfilters import slugify
+from django.db.models import Q
+
+
+class ProfileManager(models.Manager):
+
+    def get_all_profiles_to_invite(self, sender):
+        profiles = Profile.objects.all().exclude(user=sender)
+        profile = Profile.objects.get(user=sender)
+        qs = Relationship.objects.filter(Q(sender=profile) | Q(reciever=profile))
+        print(qs)
+
+        accepted = []
+        for rel in qs:
+            if rel.status == 'accepted':
+                accepted.append(rel.receiver)
+                accepted.append(rel.sender)
+        print(accepted)
+
+        available = [profile for profile in profiles if profile not in accepted]
+        print(available)
+        return available
+
+    def get_all_profiles(self, me):
+        profiles = Profile.objects.all().exclude(user=me)
+        return profiles
 
 
 class Profile(models.Model):
@@ -16,6 +41,8 @@ class Profile(models.Model):
     slug = models.SlugField(unique=True, blank=True)
     updated = models.DateTimeField(auto_now=True)
     created = models.DateTimeField(auto_now_add=True)
+
+    objects = ProfileManager()
 
     def get_friends(self):
         return self.friends.all()
@@ -67,6 +94,12 @@ STATUS_CHOISES = (
 )
 
 
+class RelationshipManager(models.Manager):
+    def invitation_received(self, receiver):
+        qs = Relationship.objects.filter(receiver=receiver, status='send')
+        return qs
+
+
 class Relationship(models.Model):
     sender = models.ForeignKey(Profile, on_delete=models.CASCADE,
                                related_name='sender')
@@ -75,6 +108,8 @@ class Relationship(models.Model):
     status = models.CharField(max_length=8, choices=STATUS_CHOISES)
     updated = models.DateTimeField(auto_now=True)
     created = models.DateTimeField(auto_now_add=True)
+
+    objects = RelationshipManager()
 
     def __str__(self):
         return f'{self.sender}-{self.receiver}-{self.status}'
