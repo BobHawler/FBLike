@@ -10,7 +10,8 @@ class ProfileManager(models.Manager):
     def get_all_profiles_to_invite(self, sender):
         profiles = Profile.objects.all().exclude(user=sender)
         profile = Profile.objects.get(user=sender)
-        qs = Relationship.objects.filter(Q(sender=profile) | Q(receiver=profile))
+        qs = Relationship.objects.filter(Q(sender=profile) |
+                                         Q(receiver=profile))
         print(qs)
         print('#############')
 
@@ -22,7 +23,8 @@ class ProfileManager(models.Manager):
         print(accepted)
         print('#############')
 
-        available = [profile for profile in profiles if profile not in accepted]
+        available = [profile for profile in profiles
+                     if profile not in accepted]
         print(available)
         print('#############')
         return available
@@ -98,7 +100,7 @@ STATUS_CHOISES = (
 
 
 class RelationshipManager(models.Manager):
-    def invitation_received(self, receiver):
+    def invitations_received(self, receiver):
         qs = Relationship.objects.filter(receiver=receiver, status='send')
         return qs
 
@@ -107,7 +109,7 @@ class Relationship(models.Model):
     sender = models.ForeignKey(Profile, on_delete=models.CASCADE,
                                related_name='sender')
     receiver = models.ForeignKey(Profile, on_delete=models.CASCADE,
-                                 related_name='receiverr')
+                                 related_name='receiver')
     status = models.CharField(max_length=8, choices=STATUS_CHOISES)
     updated = models.DateTimeField(auto_now=True)
     created = models.DateTimeField(auto_now_add=True)
