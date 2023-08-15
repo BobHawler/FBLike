@@ -69,6 +69,8 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'profiles.context_processors.profile_pic',
+                'profiles.context_processors.invatations_received_no',
             ],
         },
     },
@@ -139,3 +141,5 @@ MEDIA_ROOT = os.path.join(os.path.dirname(BASE_DIR),
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+LOGIN_URL = '/admin/'
